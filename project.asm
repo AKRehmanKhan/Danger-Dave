@@ -3,17 +3,10 @@
 
 jmp start
  
- l1: db '**DANGEROUS DAVE**'
- M: db 'Developed by A.Khan and S.Amir'
- button1: db ' PLAY '
- button2: db ' EXIT '
- Instruc: db ' INSTRUCTIONS '
- len: dw 1
- breath: dw 1
- rules1: db 'Use arrow keys to move right left and jump'
- rules2: db 'Collect trophy and move through the door to progress'
- play: db 'Press ENTER To'
- exit: db 'Press ESC To'
+ l1: db '**DANGER DAVE**'
+ l2: db 'SCORE 00000'
+ l3: db 'LEVEL   1  '
+ l4: db 'DAVES      '
 
 Clrscreen :
            push ax
@@ -60,7 +53,7 @@ rectangle:  push bp
            mov es,ax
            
            ;this loop is printing roof of rectangle
-           roof : mov word[es:di],1100111000101010b   ;printing steric
+           roof : mov word[es:di],0100111000101010b   ;printing steric
            add di,2
            cmp di,cx
            jne roof
@@ -85,9 +78,9 @@ rectangle:  push bp
            sub dx,2                                   ; dx is controlling prinring of 2nd wall
            
            ; this loop is printing walls of rectangle
-           main_loop: mov word[es:di],1100111000101010b
+           main_loop: mov word[es:di],0100111000101010b
            add di,dx
-           mov word[es:di],1100111000101010b
+           mov word[es:di],0100111000101010b
            mov bx,160
            sub bx,dx
            add di,bx
@@ -101,7 +94,7 @@ rectangle:  push bp
            
 skip:
            ; this loop is printing floor of rectangle
-           floor: mov word[es:di],1100111000101010b
+           floor: mov word[es:di],0100111000101010b
            add di,2
            cmp di,cx
            jne floor
@@ -139,40 +132,66 @@ Brick:
          push si
 
          mov ax,80
-         mov di,[bp+6]
-         mul di
-         add ax,[bp+4] 
-         mov di,2
-         mul di
+         mul word[bp+6]   ; y axis
+         add ax,word[bp+4]   ; x axis
+         shl ax,1
          mov di,ax
          mov ax, 0xb800
          mov es,ax
-         mov cx,[bp+6]
-         mov si,0
-li1:      
- 
-
-li2:      
-         mov word[es:di],0100111000001101b
+         mov word[es:di],0100111101011111b
          add di,2
-         add si,1
-         cmp si,[len]
-         jne li2
-         add cx,1
-         call locCal
-         mov si,0
-         mov ax,0
-         mov ax,[bp+6]
-         add ax, [breath]
-         cmp cx,ax
-         jne li1
+         mov word[es:di],0100111101111100b
+         add di,2
+         mov word[es:di],0100111101011111b
+         add di,2
+         mov word[es:di],0100111101011111b
+         add di,154
+         mov word[es:di],0100111101011111b
+         add di,2
+         mov word[es:di],0100111101011111b
+         add di,2
+         mov word[es:di],0100111101111100b
+         add di,2
+         mov word[es:di],0100111101011111b
+
   
          pop si
          pop di
          pop cx
          pop ax
          pop bp
-         ret 4
+         ret 2
+
+SpecialBrick: 
+         push bp
+         mov bp,sp
+         push ax
+         push cx
+         push di
+         push si
+
+         mov ax,80
+         mul word[bp+6]   ; y axis
+         add ax,word[bp+4]   ; x axis
+         shl ax,1
+         mov di,ax
+         mov ax, 0xb800
+         mov es,ax
+         mov word[es:di],0100111101011111b
+         add di,2
+         mov word[es:di],0100111101111100b
+         add di,2
+         mov word[es:di],0100111101011111b
+         add di,2
+         mov word[es:di],0100111101011111b
+
+  
+         pop si
+         pop di
+         pop cx
+         pop ax
+         pop bp
+         ret 2
 
 
 MainLabel:
@@ -214,292 +233,727 @@ nextcha : mov al,[si]
 
            ret 10
 
+Boarder:
+          push ax
+          push dx
+          push si
+
+
+;///////////(top)//////////
+   mov ax,4       ; y
+   push ax
+   mov ax,4       ; x
+   mov si,0
+iter1: 
+       push ax
+             
+       call Brick 
+       add ax,4
+       add si,1
+       cmp si,18
+       jne iter1
+       pop ax
+
+;///////////(bottom)//////////
+
+   mov ax,24     ; y
+   push ax
+   mov ax ,0     ;x
+   mov si,0
+iter2: 
+       push ax     
+       call SpecialBrick 
+       add ax,4
+       add si,1
+       cmp si,20
+       jne iter2
+       pop ax
+       
+
+;///////////(left wall)//////////
+
+   mov ax,4        ;y
+   mov si,0        ;counter
+iter3: 
+       mov dx,0    ;x
+       push ax
+       push dx      
+       call Brick 
+       pop ax
+       add ax,2
+       add si,1
+       cmp si,11
+       jne iter3
+    
+   
+
+;///////////(right wall)//////////
+   mov ax,4          ; y
+   mov si,0          ; counter
+iter4: 
+       mov dx,76     ; x
+       push ax
+       push dx      
+       call Brick 
+       pop ax
+       add ax,2
+       add si,1
+       cmp si,11
+       jne iter4
+
+       pop si
+       pop dx
+       pop ax
+
+     ret
+
+TopMostRow:
+           
+       push ax
+       push es
+       push di
+
+
+      ;Printing "Dangerou Dave"
+       mov ax,10000100b   ; attribute
+       push ax
+       mov ax,30   ;x
+       push ax
+       mov ax,0    ;y
+       push ax
+       mov ax,l1
+       push ax
+       mov ax,15
+       push ax
+       call MainLabel
+
+
+
+       ;Printing "SCORE 00000"
+       mov ax,00000110b
+       push ax
+       mov ax,4
+       push ax
+       mov ax,2
+       push ax
+       mov ax,l2
+       push ax
+       mov ax,11
+       push ax
+       call MainLabel
+
+       ;Printing "Level 1"
+       mov ax,000001110b
+       push ax
+       mov ax,33
+       push ax
+       mov ax,2
+       push ax
+       mov ax,l3
+       push ax
+       mov ax,11
+       push ax
+       call MainLabel
+
+      ;Printing "Daves"
+       mov ax,00000101b
+       push ax
+       mov ax,64
+       push ax
+       mov ax,2
+       push ax
+       mov ax,l4
+       push ax
+       mov ax,11
+       push ax
+       call MainLabel
+
+       mov di,460
+       mov ax,0xb800
+       mov es,ax
+       mov word [es:di],0000111000000010b
+       add di,4
+       mov word [es:di],0000111000000010b
+       add di,4
+       mov word [es:di],0000111000000010b
+       
+       pop di
+       pop es
+       pop ax
+
+
+     ret
+
+InnerBricks:
+ 
+   push ax
+   push dx
+   push es
+   push di
+   push si
+
+
+;     ////////////////////(Row 1)////////////////////
+   mov si,0
+   mov ax,19
+   push ax
+   mov ax,15
+   mov si,0
+L1: 
+       push ax
+             
+       call Brick 
+       add ax,4
+       add si,1
+       cmp si,4
+       jne L1
+       pop ax
+
+
+      mov ax,19
+      mov si,0
+L2: 
+       mov dx,44
+       push ax
+       push dx      
+       call Brick 
+       pop ax
+       add ax,2
+       add si,1
+       cmp si,11
+       jne L2
+
+
+
+     
+   mov ax,19
+   push ax
+   mov ax,48
+   mov si,0
+L3: 
+       push ax
+             
+       call Brick 
+       add ax,4
+       add si,1
+       cmp si,6
+       jne L3
+       pop ax
+
+ ; ////////////////////(Row 2 )//////////////   
+
+  
+       
+       
+   mov ax,14
+   push ax
+   mov ax,4
+   mov si,0
+L4: 
+       push ax
+             
+       call Brick 
+       cmp si,4
+       jne skipp
+       add ax,16
+       skipp: 
+       add ax,17
+       add si,1
+       cmp si,5
+       jne L4
+       pop ax
+
+ ; ////////////////////(Row 3 )//////////////   
+
+mov ax,9
+   push ax
+   mov ax,12
+   mov si,0
+L5: 
+       push ax
+             
+       call Brick  
+       add ax,17
+       add si,1
+       cmp si,4
+       jne L5
+       pop ax
+  
+
+
+   pop si
+   pop di
+   pop es
+   pop dx
+   pop ax
+
+ret 
+ 
+
+Dimond:
+         push bp
+         mov bp,sp
+         push ax
+         push dx
+         push es
+         push di
+         push si
+
+         mov ax,80
+         mul word[bp+6]   ; y axis
+         add ax,word[bp+4]   ; x axis
+         shl ax,1
+         mov di,ax
+         mov ax, 0xb800
+         mov es,ax    
+         mov word[es:di],0000001100000100b
+       
+      
+
+         pop si
+         pop di
+         pop es
+         pop dx
+         pop ax
+         pop bp
+
+         ret 4
+
+SpecialDimond:
+              push bp
+              mov bp,sp
+              push ax
+              push dx
+              push es
+              push di
+              push si
+
+              mov ax,80
+              mul word[bp+6]   ; y axis
+              add ax,word[bp+4]   ; x axis
+              shl ax,1
+              mov di,ax
+              mov ax, 0xb800
+              mov es,ax
+         
+              mov word[es:di],0000010000000100b
+              add di,2
+              mov word[es:di],0000010000000100b
+              add di,2
+              mov word[es:di],0000010000000100b
+              add di,158
+              mov word[es:di],0000010000000100b    
+
+              pop si
+              pop di
+              pop es
+              pop dx
+              pop ax
+              pop bp
+
+              ret 4
+
+
+PrintDimonds:
+              push ax
+              push dx
+              push es
+              push di
+              push si
+
+              ; row 3 
+              mov ax,8 ; y
+              mov si,14  ; x
+        
+              mov di,0
+k1:
+              push ax
+              push si
+              call Dimond
+              add si,17
+              add di,1
+              cmp di,4
+              jne k1
+ 
+              ; row 2
+        
+              mov ax,13
+              mov si,5
+              mov di,0
+k2:
+              push ax
+              push si
+              call Dimond
+              add si,17
+              add di,1
+              cmp di,4
+              jne k2
+
+              mov ax,18
+              mov si,16
+              mov di,0
+
+              ;row 1
+k3:
+              push ax
+              push si
+              call Dimond
+              add si,12
+              add di,1
+              cmp di,2
+              jne k3
+
+              ; specialdimond
+              mov ax,7
+              mov si,5
+              push ax
+              push si
+              call SpecialDimond
+       
+              pop si
+              pop di
+              pop es
+              pop dx
+              pop ax
+
+              ret 
+
+ InDoor:
+         push bp
+         mov bp,sp
+         push ax
+         push dx
+         push es
+         push di
+         push si
+
+         mov ax,0xb800
+         mov es,ax
+         mov ax,80
+         mul word[bp+6]   ; y axis
+         add ax,word[bp+4]   ; x axis
+         shl ax,1
+         mov di,ax
+ 
+ ;/////////first row of door
+         
+         mov si,0
+         lp: mov word[es:di],0110111000111110b
+             add di,2
+             add si,1
+             cmp si,3
+             jne lp
+  
+
+ ;/////////Second row of door
+         add di,158     
+         mov si,0
+    
+         lpp: cmp si,0
+              jne s
+              mov word[es:di],0110000100000111b   
+           s: cmp si,0
+              je s1
+              mov word[es:di],0110000000000000b
+          s1: sub di,2
+              add si,1
+              cmp si,3
+              jne lpp
+
+
+ ;/////////third row of door
+              add di,162    
+              mov si,0
+
+        lppp: mov word[es:di],0110111000111110b
+              add di,2
+              add si,1
+              cmp si,3
+              jne lppp
+        
+              pop si
+              pop di
+              pop es
+              pop dx
+              pop ax
+              pop bp
+              ret 4
+
+
+ OutDoor:
+         push bp
+         mov bp,sp
+         push ax
+         push dx
+         push es
+         push di
+         push si
+
+         mov ax,0xb800
+         mov es,ax
+         mov ax,80
+         mul word[bp+6]   ; y axis
+         add ax,word[bp+4]   ; x axis
+         shl ax,1
+         mov di,ax
+ 
+ ;/////////first row of door
+         
+         mov si,0
+         lpa: mov word[es:di],0110111000111100b
+              add di,2
+              add si,1
+              cmp si,3
+              jne lpa
+  
+
+ ;/////////Second row of door
+         add di,158     
+         mov si,0
+    
+         lppa: cmp si,0
+               jne sa
+               mov word[es:di],0110000100000111b   
+           sa: cmp si,0
+               je s1a
+               mov word[es:di],0110000000000000b
+          s1a: sub di,2
+               add si,1
+               cmp si,3
+               jne lppa
+
+
+ ;/////////third row of door
+         add di,162    
+         mov si,0
+         lpppa: mov word[es:di],0110111000111100b
+                add di,2
+                add si,1
+                cmp si,3
+                jne lpppa
+        
+         pop si
+         pop di
+         pop es
+         pop dx
+         pop ax
+         pop bp
+
+         ret 4
+
+
+PrintDoor:
+          ;inner door
+          mov ax,21
+          push ax
+          mov ax,4
+          push ax
+          call InDoor
+
+          ;outer door
+          mov ax,21
+          push ax
+          mov ax,48
+          push ax
+          call OutDoor
+          
+          ret
+
+
+character:
+           push bp
+           mov bp,sp
+           push ax
+           push di
+           push si
+           push es
+
+           ; head
+           mov ax,[bp+4]
+           mov di,80
+           mul di
+           add ax,[bp+6]
+           shl ax,1
+           mov di,ax
+           mov ax,0xb800
+           mov es,ax
+           mov word[es:di],1000111000000001b
+    
+           ; body
+           mov ax,[bp+4]
+           add ax,1
+           mov di,80
+           mul di
+           add ax,[bp+6]
+           shl ax,1
+           mov di,ax
+           mov ax,0xb800
+           mov es,ax
+           mov word[es:di],1000100110110001b
+
+           ; arms
+
+           ; left arm
+           mov ax,[bp+4]
+           add ax,1
+           mov di,80
+           mul di
+           add ax,[bp+6]
+           dec ax
+           shl ax,1
+           mov di,ax
+           mov ax,0xb800
+           mov es,ax
+           mov word[es:di],1000010100101111b
+
+           ; right arm
+           mov ax,[bp+4]
+           add ax,1
+           mov di,80
+           mul di
+           add ax,[bp+6]
+           inc ax
+           shl ax,1
+           mov di,ax
+           mov ax,0xb800
+           mov es,ax
+           mov word[es:di],1000010101011100b
+
+           ; left foot
+           mov ax,[bp+4]
+           add ax,2
+           mov di,80
+           mul di
+           add ax,[bp+6]
+           dec ax
+           shl ax,1
+           mov di,ax
+           mov ax,0xb800
+           mov es,ax
+           mov word[es:di],1000101101011111b
+
+           ; legs
+           mov ax,[bp+4]
+           add ax,2
+           mov di,80
+           mul di
+           add ax,[bp+6]
+           shl ax,1
+           mov di,ax
+           mov ax,0xb800
+           mov es,ax
+           mov word[es:di],1000010111101111b
+
+           ; right foot
+           mov ax,[bp+4]
+           add ax,2
+           mov di,80
+           mul di
+           add ax,[bp+6]
+           inc ax
+           shl ax,1
+           mov di,ax
+           mov ax,0xb800
+           mov es,ax
+           mov word[es:di],1000101101011111b
+
+           pop es
+           pop si
+           pop di
+           pop ax
+           pop bp
+
+           ret 4
+
+
+PrintCharacter:
+               ;initialy character at (8,21)
+               ;At (42,21) first brick is present
+               push es
+               mov ax,0xb800
+               mov es,ax
+               in al,0x60
+                mov di,6
+                mov byte[es:di],al
+
+               mov ax,8   ;x
+               push ax
+               mov ax,21    ;y
+               push ax
+               call character
+ 
+               mov al , 0x20
+               out 0x20,al
+
+               pop es
+               ret
+
+MovCharacter:
+            mov ax,0
+            mov es,ax
+            cli
+            mov word[es:9*4],PrintCharacter
+            mov [es:9*4+2],cs
+            sti
+
+
+A1: cmp ax,74
+    jne A1
+   ret
+
+Trophy:
+ push bp
+ mov bp,sp
+ push ax
+    push di
+    push si
+    push es
+
+  mov ax,[bp+4]
+  mov di,80
+  mul di
+  add ax,[bp+6]
+  shl ax,1
+  mov di,ax
+  mov ax,0xb800
+  mov es,ax
+  
+  mov word [es:di],0000111001010110b
+  add di,2
+  mov word [es:di],0000111010101111b
+  sub di,4
+  mov word [es:di],0000111010101110b
+  add di,162
+  mov word [es:di],0000111010011101b
+
+    pop es
+    pop si
+    pop di
+    pop ax
+    pop bp
+
+    ret 4
+
+PrintTrophy:
+             mov ax,73   ;x
+             push ax
+             mov ax,12   ;y
+             push ax
+             call Trophy
+
+             ret
 
 
 start:
        call Clrscreen
-      
-       ; printing border box
-       mov ax,0                    ;specifying x coordiinate
-       push ax
-       mov ax,1                    ; specifying y coordinate
-       push ax
-       mov ax,24                   ; specifying rows
-       push ax
-       mov ax,80                   ; specifying columns
-       push ax
-       call rectangle
-
-       ;Printing Dangerous Dave
-       mov ax,00011100b            ; attribute
-       push ax
-       mov ax,30                   ;x coordinate
-       push ax
-       mov ax,3                    ;y coordinate
-       push ax   
-       mov ax,l1                   ; Dangerous Dave array
-       push ax
-       mov ax,18                   ; length of string
-       push ax
-       call MainLabel
-
-       ;printing"Developed by A.Khan and S.Amir"
-       mov ax,00110100b
-       push ax
-       mov ax, 25
-       push ax
-       mov ax,14
-       push ax
-       mov ax,M
-       push ax
-       mov ax,30
-       push ax
-       call MainLabel
-
-
-       ;Printing "Press enter to play"
-       mov ax,00000101b
-       push ax
-       mov ax,62
-       push ax
-       mov ax,16
-       push ax
-       mov ax,play
-       push ax
-       mov ax,14
-       push ax
-       call MainLabel
-       
-       ;Printing "Play" Button
-       mov ax,10100100b
-       push ax
-       mov ax,66
-       push ax
-       mov ax,18
-       push ax
-       mov ax,button1
-       push ax
-       mov ax,6
-       push ax
-       call MainLabel
-
-       ;Printing"Press esc to exit"
-       mov ax,00000101b
-       push ax
-       mov ax,4
-       push ax
-       mov ax,16
-       push ax
-       mov ax,exit
-       push ax
-       mov ax,12
-       push ax
-       call MainLabel
-   
-       ;Printing "EXIT" Button
-       mov ax,10100100b
-       push ax
-       mov ax,6
-       push ax
-       mov ax,18
-       push ax
-       mov ax,button2
-       push ax
-       mov ax,6
-       push ax
-       call MainLabel
-
-       ;Printing Instruction
-       mov ax,00001110b
-       push ax
-       mov ax,30
-       push ax
-       mov ax,17
-       push ax
-       mov ax,Instruc
-       push ax
-       mov ax,14
-       push ax
-       call MainLabel
-
-       ;Printing Rule 1
-       mov ax,00000011b
-       push ax
-       mov ax,18
-       push ax
-       mov ax,19
-       push ax
-       mov ax,rules1
-       push ax
-       mov ax,42
-       push ax
-       call MainLabel
-
-       ;Printing Rule 2
-       mov ax,00000011b
-       push ax
-       mov ax,13
-       push ax
-       mov ax,21
-       push ax
-       mov ax,rules2
-       push ax
-       mov ax,52
-       push ax
-       call MainLabel
-
-
-       mov ax,5
-       mov cx,25
-       mov si,0
-iter: 
-       
-       push ax
-       push cx
-       call Brick 
-       add cx,1
-       add si,1
-       cmp si,30
-       jne iter
-       
-       mov ax,6
-       mov cx,25
-       push ax
-       push cx
-       call Brick
-
-       mov ax,7
-       mov cx,25
-       mov si,0
-       
-iter1: 
-       
-       push ax
-       push cx
-       call Brick 
-       add cx,1
-       add si,1
-       cmp si,15
-       jne iter1
-       
-       mov ax,6
-       mov cx,54
-
-Jlooop:
-       push ax
-       push cx
-       call Brick
-       add ax,1
-       cmp ax,12
-       jne Jlooop
-
-       mov ax,9
-       mov cx,35
-       mov si,0
-
-iter4:
-       push ax
-       push cx
-       call Brick 
-       add cx,1
-       add si,1
-       cmp si,20
-       jne iter4
- 
-       mov ax,12
-       mov cx,25
-       mov si,0
-iter2: 
-       
-       push ax
-       push cx
-       call Brick 
-       add cx,1
-       add si,1
-       cmp si,30
-       jne iter2
-       mov ax,10
-       mov cx,30
-       mov si,0
- 
-  it3:  
-       
-       push ax
-       push cx  
-       call Brick
-       add cx,1
-       add si,1
-       cmp si,2
-       jb it3
-       mov ax,7
-       mov cx,48
-       mov si,0
-
-it4:  
-       
-       push ax
-       push cx  
-       call Brick
-       add cx,1
-       add si,1
-       cmp si,2
-       jb it4
-
-       ;TrophyShine
-       mov ax,0xb800
-       mov es,ax
-       mov di,1014
-       mov word[es:di],1000010100100111b
-
-       ;Trophy
-       mov ax,0xb800
-       mov es,ax
-       mov di,1012
-       mov word[es:di],0000010100000101b
-
-      ;character
-       mov ax,0xb800
-       mov es,ax
-       mov di,1810
-       mov word[es:di],1000001000001100b
-
-       ;dimond1
-       mov ax,0xb800
-       mov es,ax
-       mov di,1680
-       mov word[es:di],0000001100000100b
-
-       ;dimond2
-       mov ax,0xb800
-       mov es,ax
-       mov di,1502
-       mov word[es:di],0000001100000100b
-
-       ;dimond3
-       mov ax,0xb800
-       mov es,ax
-       mov di,1372
-       mov word[es:di],0000001100000100b       
-
-       ;dimond4
-       mov ax,0xb800
-       mov es,ax
-       mov di,1066
-       mov word[es:di],0000001100000100b
-
-       ;dimond5
-       mov ax,0xb800
-       mov es,ax
-       mov di,1030
-       mov word[es:di],0000001100000100b
-
-       ;Door
-       mov ax,0xb800
-       mov es,ax
-       mov di,1866
-       mov word[es:di],0000000111101111b
+       call TopMostRow
+       call Boarder
+       call InnerBricks
+       call PrintDimonds
+       call PrintTrophy
+       call PrintDoor
+      call PrintCharacter
+       call MovCharacter
 
        mov ax,0x4c00
        int 21h
-
-
