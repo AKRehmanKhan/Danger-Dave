@@ -12,6 +12,17 @@ jmp start
  LevelUpScore: db '        LEVEL UP SCORE        '
  PrintScore : db 'SCORE'
  PrintLevel : db 'LEVEL'
+ M: db 'Developed by A.Khan and S.Amir'
+ button1: db ' PLAY '
+ button2: db ' EXIT '
+ Instruc: db ' INSTRUCTIONS '
+ len: dw 1
+ breath: dw 1
+ rules1: db 'Use arrow keys to move right left and jump'
+ rules2: db 'Collect trophy and move through the door to progress'
+ play: db 'Press ENTER To'
+ exit: db 'Press ESC To'
+
  dimondpositions: dw 14,16,29,16,5,11,23,11,38,11,53,11,68,11,14,6,29,6,44,6,59,6,8,6,74,6
  noofdimonds: dw 13
  score: dw 0
@@ -24,6 +35,7 @@ jmp start
  isfall: dw 0
  DiffH: dw 0
  lf: dw 0
+ ef : db 0
  trophy: db 0
 
 Clrscreen :
@@ -1687,8 +1699,27 @@ PrintCharacter:
 
                in al,0x60   ; push asci of key in al
            
-             
-          ; check for right key
+     A4:  cmp byte[ef],0
+          jne AA
+          cmp al,0x1c
+          jne near nomatch
+          
+
+       call Clrscreen
+       call TopMostRow
+       call Boarder
+       call InnerBricks
+       call PrintDimonds
+       call PrintTrophy
+       call PrintDoor
+       call FirstCharacter
+         mov byte[ef],1 
+
+
+
+
+         ; check for right key
+ AA:                   ; check for right key
                cmp al,0x4d
                jne A1
              
@@ -1910,18 +1941,302 @@ PrintTrophy:
              ret
 
 
+WelcomeScreen:
+
+       call Clrscreen
+      
+       ; printing border box
+       mov ax,0                    ;specifying x coordiinate
+       push ax
+       mov ax,1                    ; specifying y coordinate
+       push ax
+       mov ax,24                   ; specifying rows
+       push ax
+       mov ax,80                   ; specifying columns
+       push ax
+       call rectangle
+
+       ;Printing Dangerous Dave
+       mov ax,00011100b            ; attribute
+       push ax
+       mov ax,30                   ;x coordinate
+       push ax
+       mov ax,3                    ;y coordinate
+       push ax   
+       mov ax,l1                   ; Dangerous Dave array
+       push ax
+       mov ax,15                   ; length of string
+       push ax
+       call MainLabel
+
+       ;printing"Developed by A.Khan and S.Amir"
+       mov ax,00110100b
+       push ax
+       mov ax, 25
+       push ax
+       mov ax,14
+       push ax
+       mov ax,M
+       push ax
+       mov ax,30
+       push ax
+       call MainLabel
+
+
+       ;Printing "Press enter to play"
+       mov ax,00000101b
+       push ax
+       mov ax,62
+       push ax
+       mov ax,16
+       push ax
+       mov ax,play
+       push ax
+       mov ax,14
+       push ax
+       call MainLabel
+       
+       ;Printing "Play" Button
+       mov ax,10100100b
+       push ax
+       mov ax,66
+       push ax
+       mov ax,18
+       push ax
+       mov ax,button1
+       push ax
+       mov ax,6
+       push ax
+       call MainLabel
+
+       ;Printing"Press esc to exit"
+       mov ax,00000101b
+       push ax
+       mov ax,4
+       push ax
+       mov ax,16
+       push ax
+       mov ax,exit
+       push ax
+       mov ax,12
+       push ax
+       call MainLabel
+   
+       ;Printing "EXIT" Button
+       mov ax,10100100b
+       push ax
+       mov ax,6
+       push ax
+       mov ax,18
+       push ax
+       mov ax,button2
+       push ax
+       mov ax,6
+       push ax
+       call MainLabel
+
+       ;Printing Instruction
+       mov ax,00001110b
+       push ax
+       mov ax,30
+       push ax
+       mov ax,17
+       push ax
+       mov ax,Instruc
+       push ax
+       mov ax,14
+       push ax
+       call MainLabel
+
+       ;Printing Rule 1
+       mov ax,00000011b
+       push ax
+       mov ax,18
+       push ax
+       mov ax,19
+       push ax
+       mov ax,rules1
+       push ax
+       mov ax,42
+       push ax
+       call MainLabel
+
+       ;Printing Rule 2
+       mov ax,00000011b
+       push ax
+       mov ax,13
+       push ax
+       mov ax,21
+       push ax
+       mov ax,rules2
+       push ax
+       mov ax,52
+       push ax
+       call MainLabel
+
+
+       mov ax,5
+       mov cx,25
+       mov si,0
+iter: 
+       
+       push ax
+       push cx
+       call Brickk 
+       add cx,1
+       add si,1
+       cmp si,30
+       jne iter
+       
+       mov ax,6
+       mov cx,25
+       push ax
+       push cx
+       call Brickk
+
+       mov ax,7
+       mov cx,25
+       mov si,0
+       
+iter11: 
+       
+       push ax
+       push cx
+       call Brickk 
+       add cx,1
+       add si,1
+       cmp si,15
+       jne iter11
+       
+       mov ax,6
+       mov cx,54
+
+Jlooop:
+       push ax
+       push cx
+       call Brickk
+       add ax,1
+       cmp ax,12
+       jne Jlooop
+
+       mov ax,9
+       mov cx,35
+       mov si,0
+
+iter44:
+       push ax
+       push cx
+       call Brickk
+       add cx,1
+       add si,1
+       cmp si,20
+       jne iter44
+ 
+       mov ax,12
+       mov cx,25
+       mov si,0
+iter22: 
+       
+       push ax
+       push cx
+       call Brickk
+       add cx,1
+       add si,1
+       cmp si,30
+       jne iter22
+       mov ax,10
+       mov cx,30
+       mov si,0
+ 
+  it3:  
+       
+       push ax
+       push cx  
+       call Brickk
+       add cx,1
+       add si,1
+       cmp si,2
+       jb it3
+       mov ax,7
+       mov cx,48
+       mov si,0
+
+it4:  
+       
+       push ax
+       push cx  
+       call Brickk
+       add cx,1
+       add si,1
+       cmp si,2
+       jb it4
+
+       ;TrophyShine
+       mov ax,0xb800
+       mov es,ax
+       mov di,1014
+       mov word[es:di],1000010100100111b
+
+       ;Trophy
+       mov ax,0xb800
+       mov es,ax
+       mov di,1012
+       mov word[es:di],0000010100000101b
+
+      ;character
+       mov ax,0xb800
+       mov es,ax
+       mov di,1810
+       mov word[es:di],1000001000001100b
+
+       ;dimond1
+       mov ax,0xb800
+       mov es,ax
+       mov di,1680
+       mov word[es:di],0000001100000100b
+
+       ;dimond2
+       mov ax,0xb800
+       mov es,ax
+       mov di,1502
+       mov word[es:di],0000001100000100b
+
+       ;dimond3
+       mov ax,0xb800
+       mov es,ax
+       mov di,1372
+       mov word[es:di],0000001100000100b       
+
+       ;dimond4
+       mov ax,0xb800
+       mov es,ax
+       mov di,1066
+       mov word[es:di],0000001100000100b
+
+       ;dimond5
+       mov ax,0xb800
+       mov es,ax
+       mov di,1030
+       mov word[es:di],0000001100000100b
+
+       ;Door
+       mov ax,0xb800
+       mov es,ax
+       mov di,1866
+       mov word[es:di],0000000111101111b
+
+       
+           call MovCharacter    
+         ret
+
+
+   
+
+
+        
 start:
    
-       call Clrscreen
-       call TopMostRow
-       call Boarder
-       call InnerBricks
-       call PrintDimonds
-       call PrintTrophy
-       call PrintDoor
-       call FirstCharacter
-       call MovCharacter
-       call LevelUpMessage
+       call WelcomeScreen
 
        mov ax,0x4c00
        int 21h
